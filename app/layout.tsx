@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "sonner";
+import { MouseGlow } from "@/components/mouse-glow";
 
 export default function RootLayout({
   children,
@@ -30,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${firaCode.variable} antialiased min-h-screen bg-background text-foreground font-sans`}
+        className={`${inter.variable} ${firaCode.variable} antialiased min-h-screen bg-background text-foreground font-sans relative`}
         suppressHydrationWarning
       >
         <ThemeProvider
@@ -39,6 +40,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <MouseGlow />
           <PWAProvider>
             <div className="relative flex min-h-screen flex-col">
               <Navbar />

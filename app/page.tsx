@@ -19,7 +19,7 @@ export default function Home() {
       </div>
 
       {/* Footer Info / Features */}
-      <footer className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 border-t border-primary/5">
+      <footer className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 border-t border-primary/20">
         <div className="space-y-2 text-center md:text-left">
           <h3 className="font-semibold text-primary">Instant Format</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">

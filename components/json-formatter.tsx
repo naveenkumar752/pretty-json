@@ -315,11 +315,24 @@ export function JsonFormatter() {
   }
 
   const handleClear = () => {
-    if (!input && !output) return
-    setInput("")
-    setOutput("")
+    if (!input && !output && !diffInput && !schemaInput) return
+    
+    updateActiveTab({
+      input: "",
+      output: "",
+      diffInput: "",
+      schemaInput: "",
+      queryInput: "",
+    })
+    
     setError(null)
     setHoveredPath("")
+    setSchemaResult(null)
+    setDiffResult([])
+    setIsCompareShowing(false)
+    setIsSchemaShowing(false)
+    setFetchUrl("")
+    
     localStorage.removeItem("json_lens_input")
     localStorage.removeItem("json_lens_output")
     toast.info("Workspace Cleared")
@@ -351,7 +364,30 @@ export function JsonFormatter() {
   }
 
   const handleSchemaValidate = () => {
-    // ...existing code
+    try {
+      if (!input.trim() || !schemaInput.trim()) {
+        toast.warning("Inputs missing", { description: "Please provide both Data and Schema." })
+        return
+      }
+      
+      const data = JSON.parse(input)
+      const schema = JSON.parse(schemaInput)
+      const result = validateWithSchema(data, schema)
+      setSchemaResult(result)
+      
+      if (result.isValid) {
+        toast.success("Validation Success", { 
+          description: "Data matches the provided schema.",
+          icon: <ShieldCheck className="w-4 h-4 text-green-500" />
+        })
+      } else {
+        toast.error("Schema Violation", { 
+          description: result.errors[0] || "Validation failed."
+        })
+      }
+    } catch (e: any) {
+      toast.error("Validation Error", { description: "Invalid JSON or Schema format." })
+    }
   }
 
   const handleAutoGenerateSchema = () => {
@@ -374,7 +410,37 @@ export function JsonFormatter() {
   }
 
   const handleGenerateMockData = (count: number) => {
-    // ...existing code
+    setIsFormatting(true)
+    setError(null)
+
+    setTimeout(() => {
+      try {
+        let template = { id: "uuid", name: "full_name", email: "email", active: true, role: "Admin" }
+        
+        if (input.trim()) {
+          try {
+            const parsed = JSON.parse(input)
+            // If it's an array, use the first element as template
+            template = Array.isArray(parsed) ? (parsed[0] || template) : parsed
+          } catch (e) {
+            toast.warning("Invalid JSON structure", { description: "Using default mock template." })
+          }
+        }
+
+        const mocked = generateMockData(template, count)
+        const jsonString = JSON.stringify(mocked, null, 2)
+        setInput(jsonString)
+        setOutput(jsonString)
+        
+        toast.success(`Generated ${count} Records`, {
+          description: "Mock data created based on structure."
+        })
+      } catch (err: any) {
+        toast.error("Generation failed", { description: err.message })
+      } finally {
+        setIsFormatting(false)
+      }
+    }, 600)
   }
 
   const handleFetch = async () => {
@@ -696,7 +762,7 @@ export function JsonFormatter() {
         </div>
         
         <div className={cn("grid gap-4", isCompareShowing ? "grid-cols-1" : "grid-cols-1")}>
-          <Card className={cn("transition-all duration-500 border-primary/10 bg-background/40 backdrop-blur-xl rounded-2xl overflow-hidden relative group shadow-inner flex flex-col", isCompareShowing ? "h-[300px]" : "h-[600px]")}>
+          <Card className={cn("transition-all duration-500 border-primary/20 bg-background/80 dark:bg-card/80 backdrop-blur-2xl rounded-2xl overflow-hidden relative group shadow-2xl flex flex-col", isCompareShowing ? "h-[300px]" : "h-[600px]")}>
             <div className="flex flex-col gap-3 p-6 border-b border-primary/5 bg-primary/5">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/10 shrink-0">
@@ -764,7 +830,7 @@ export function JsonFormatter() {
                 <div className="w-2 h-2 rounded-full bg-primary/40" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Compare With (Target JSON)</span>
               </div>
-              <Card className="h-[300px] border-primary/10 bg-background/40 backdrop-blur-xl rounded-2xl overflow-hidden relative group shadow-inner flex flex-col">
+              <Card className="h-[300px] border-primary/20 bg-background/80 dark:bg-card/80 backdrop-blur-2xl rounded-2xl overflow-hidden relative group shadow-2xl flex flex-col">
                 <Textarea
                   placeholder="Target JSON to compare against..."
                   className="h-full w-full font-mono text-sm leading-relaxed p-6 bg-transparent border-none rounded-none focus-visible:ring-0 resize-none transition-all duration-500 text-foreground"
@@ -786,7 +852,7 @@ export function JsonFormatter() {
                 <div className="w-2 h-2 rounded-full bg-blue-500/40" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">JSON Schema (AJV)</span>
               </div>
-              <Card className="h-[300px] border-primary/10 bg-background/40 backdrop-blur-xl rounded-2xl overflow-hidden relative group shadow-inner flex flex-col">
+              <Card className="h-[300px] border-primary/20 bg-background/80 dark:bg-card/80 backdrop-blur-2xl rounded-2xl overflow-hidden relative group shadow-2xl flex flex-col">
                 <div className="absolute top-4 right-4 z-10 flex gap-2">
                   <Button 
                     variant="secondary" 
@@ -1026,7 +1092,7 @@ export function JsonFormatter() {
           </div>
         </div>
 
-        <Card className="h-[600px] border-primary/10 bg-background/40 backdrop-blur-xl rounded-2xl overflow-hidden relative group shadow-inner flex flex-col">
+        <Card className="h-[600px] border-primary/20 bg-background/80 dark:bg-card/80 backdrop-blur-2xl rounded-2xl overflow-hidden relative group shadow-2xl flex flex-col">
           <div className="flex flex-col gap-3 p-6 border-b border-primary/5 bg-primary/5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
