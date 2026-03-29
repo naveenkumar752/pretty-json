@@ -42,7 +42,3 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 The easiest way to deploy is using the [Vercel Platform](https://vercel.com/new).
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
----
-
-Built with ❤️ by [Antigravity](https://github.com/google-deepmind)
